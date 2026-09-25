@@ -2,8 +2,8 @@
 
 ## 1. Metadatos de la Spec
 - **ID:** `SPEC-01`
-- **Estado:** `En Revisión`
-- **Versión:** `1.1.0`
+- **Estado:** `Aprobada`
+- **Versión:** `1.2.0`
 - **Dependencias:** `Ninguna` (Especificación Integral del Sistema - 100% del Alcance)
 
 ---
@@ -199,6 +199,17 @@ SuscripciónPago:
       pedagogical_recommendation: String
     }>
 
+#### Contrato 7: Gestión y Creación Jerárquica de Cursos (Web - Rol Docente)
+- **Creación de Curso:**
+  - **Entrada (`POST /api/v1/courses`):** `{ title: String (3 a 150 car.), description: String }`
+  - **Salida:** `{ id: UUID, title: String, description: String, teacher_id: UUID, published: Boolean, created_at: Timestamp }`
+- **Creación de Módulo:**
+  - **Entrada (`POST /api/v1/courses/:id/modules`):** `{ title: String, order_index: Integer }`
+  - **Salida:** `{ id: UUID, course_id: UUID, title: String, order_index: Integer }`
+- **Creación de Lección:**
+  - **Entrada (`POST /api/v1/courses/modules/:moduleId/lessons`):** `{ title: String, video_resource_id: String, pedagogical_context: String, order_index: Integer }`
+  - **Salida:** `{ id: UUID, module_id: UUID, title: String, video_resource_id: String, pedagogical_context: String, order_index: Integer }`
+
 ---
 
 ## 5. Matriz de Estados, Transiciones y Especificación Visual 3D
@@ -326,6 +337,7 @@ stateDiagram-v2
 - **HU-10 (Docente - Dashboard Móvil y Feedback de Fallas Recurrentes):** Como profesor, quiero consultar desde mi aplicación móvil el desempeño de mis alumnos y visualizar un informe analítico inteligente que me señale los conceptos y preguntas donde los alumnos presentan mayores fallas para orientar mi retroalimentación pedagógica.
 - **HU-11 (Docente - Acceso Móvil Offline-First):** Como profesor, quiero consultar las estadísticas de mis alumnos y el reporte de fallas en mi app móvil aun cuando no disponga de conexión a internet.
 - **HU-12 (Administrador - Configuración de Créditos Iniciales):** Como administrador, quiero configurar el número de créditos gratuitos asignados a los nuevos estudiantes tras la preevaluación para ajustar la política comercial o académica de la plataforma.
+- **HU-13 (Docente - Panel Web de Gestión y Exclusión de Evaluación 3D):** Como profesor autenticado en la plataforma web, quiero visualizar un panel dedicado a la creación y administración de mis cursos, módulos y lecciones, sin ver las opciones de preevaluación diagnóstica ni del Docente Virtual 3D (reservadas exclusivamente para estudiantes).
 
 ---
 
@@ -335,11 +347,14 @@ stateDiagram-v2
 - **RF-01 (Ubícuo):** El sistema deberá autenticar a los usuarios mediante tokens de acceso criptográficos con tiempo de expiración y tokens de refresco para renovación de sesión.
 - **RF-02 (Basado en Eventos):** Cuando un usuario complete el formulario de registro con datos válidos y selección de rol (`STUDENT` o `TEACHER`), el sistema deberá persistir el usuario y emitir las credenciales de sesión correspondientes.
 - **RF-03 (Basado en Estado):** Mientras un usuario posea el rol `STUDENT`, el sistema deberá restringir su acceso exclusivamente a la plataforma web, denegando el inicio de sesión en la aplicación móvil docente con un mensaje explicativo formal.
-- **RF-04 (Basado en Estado):** Mientras un usuario posea el rol `TEACHER`, el sistema deberá permitir la edición y modificación de un curso únicamente si dicho docente es el creador y propietario registrado del curso.
+- **RF-04 (Basado en Estado):** Mientras un usuario posea el rol `TEACHER`, el sistema deberá:
+  1. Habilitar exclusivamente el panel de gestión de contenidos (creación, edición y administración de cursos, módulos y lecciones propios).
+  2. Ocultar y restringir los flujos estudiantiles de preevaluación diagnóstica inicial y examen oral con el Docente Virtual 3D.
+  3. Permitir la edición y modificación de un curso únicamente si dicho docente es el creador y propietario registrado (`CourseOwnerGuard`).
 - **RF-05 (Excepcional):** Si se solicita la eliminación de cualquier entidad académica (curso, módulo, lección o usuario), entonces el sistema deberá aplicar borrado lógico (*soft delete*) preservando la integridad de los históricos y auditorías.
 
 ### Módulo 2: Gestión de Contenido Académico (LMS Core)
-- **RF-06 (Basado en Eventos):** Cuando un docente cree un curso en la web, el sistema deberá permitir la definición estructurada de Módulos ordenados y Lecciones secuenciales con su identificador audiovisual y metadatos pedagógicos.
+- **RF-06 (Basado en Eventos):** Cuando un docente autenticado acceda a la plataforma web, el sistema deberá presentarle el Gestor de Cursos Docente permitiéndole crear cursos (título, descripción, nivel formativo), estructurar módulos ordenados secuencialmente y crear lecciones asociadas a video de YouTube y contexto pedagógico.
 - **RF-07 (Ubícuo):** El sistema deberá reproducir el contenido audiovisual de las lecciones integrando la interfaz de reproducción y registrando el evento de visualización completa.
 - **RF-08 (Opcional):** Donde el estudiante decida utilizar el mecanismo de salto demostrativo en un curso, el sistema deberá habilitar el acceso directo al Examen Oral Final de dicho curso sin exigir la visualización previa de todas las lecciones.
 
@@ -454,6 +469,12 @@ stateDiagram-v2
 - **WHEN** abre la aplicación en un entorno sin conectividad a internet (modo avión)
 - **THEN** la aplicación carga inmediatamente las métricas, listas de estudiantes y reportes de fallas desde el almacenamiento local sin arrojar errores de red.
 
+### Escenario 13: Panel de gestión de cursos para el docente y exclusión del Docente 3D en la web
+- **GIVEN** un usuario autenticado en la plataforma web con rol `TEACHER`
+- **WHEN** accede a su espacio principal
+- **THEN** el sistema despliega el Gestor de Cursos Docente permitiéndole crear cursos, módulos y lecciones asociadas a YouTube
+- **AND** el sistema no renderiza ni ofrece las tarjetas de "Iniciar Diagnóstico" ni "Examen con Docente Virtual 3D", manteniéndolas restringidas a estudiantes.
+
 ---
 
 ## 9. Requisitos No Funcionales (RNF)
@@ -488,6 +509,7 @@ stateDiagram-v2
 - Renderizado 3D o avatares interactivos dentro de la aplicación móvil.
 - Interacción con el Docente Virtual 3D durante la preevaluación diagnóstica inicial o dentro de las lecciones cotidianas.
 - Acceso de estudiantes a la aplicación móvil.
+- Acceso o visualización del flujo de preevaluación diagnóstica y del examen oral 3D para usuarios con rol `TEACHER` y `ADMIN` en la plataforma web (reservado estrictamente al rol `STUDENT`).
 - Procesamiento de cobros reales con dinero en producción (se restringe estrictamente al modo desarrollo / sandbox con tarjeta de prueba).
 - Calificación manual o sobreescritura de notas en vivo por parte del docente en la app móvil (el profesor consulta analíticas, la calificación oral es semántica automatizada).
 - Fondos o escenarios 3D complejos con mobiliario pesado o simulación de habitaciones completas (se adopta un fondo plano limpio para priorizar el rendimiento y el enfoque en el avatar).
@@ -503,4 +525,4 @@ stateDiagram-v2
 - [x] Diagramas de estados Mermaid completos para el ciclo de vida del estudiante y la FSM del examen oral 3D.
 - [x] Todos los `RF-x` clasificados en notación EARS y con al menos un escenario `ESC-x` formal en Gherkin asociado.
 - [x] Casos de error, límites y exclusiones del MVP expresados taxativamente.
-- [ ] Aprobada formalmente por el usuario para pasar a la fase de Plan Técnico (`plan.md`).
+- [x] Aprobada formalmente por el usuario para pasar a la fase de Plan Técnico (`plan.md`).

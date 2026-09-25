@@ -10,7 +10,7 @@
 ## Resumen de Trazabilidad
 - **Especificación Funcional:** [specs/01-plataforma-lms-adaptativa/spec.md](file:///c:/EDBERTO/ULTIMO/SW1/PROYECTO%20FINAL/SW1-PF-DOCENTE-VIRTUAL-SDD-2026-2/specs/01-plataforma-lms-adaptativa/spec.md)
 - **Plan Técnico:** [specs/01-plataforma-lms-adaptativa/plan.md](file:///c:/EDBERTO/ULTIMO/SW1/PROYECTO%20FINAL/SW1-PF-DOCENTE-VIRTUAL-SDD-2026-2/specs/01-plataforma-lms-adaptativa/plan.md)
-- **Total Tareas:** 32 | **Pendientes:** 0 | **Completadas:** 32 (100% COMPLETADO)
+- **Total Tareas:** 35 | **Pendientes:** 0 | **Completadas:** 35 (100% COMPLETADO)
 
 ---
 
@@ -110,6 +110,24 @@
   - **Depende de:** `3.4`
   - **Precondición:** Vista de curso renderizando lecciones.
   - **Hecho cuando:** Test en `apps/web/src/features/courses/CourseView.test.tsx` confirme que el botón redirige directamente a la evaluación oral sin validar lecciones previas.
+
+- [x] 3.6: Construir en `apps/web` el panel de gestión docente `TeacherCourseManager.tsx` (creación jerárquica de cursos, módulos y lecciones asociadas a YouTube) con cableado E2E a `/api/v1/courses`
+  - **Cubre:** `HU-08`, `HU-13`, `RF-06`, `ESC-13`
+  - **Depende de:** `3.2`, `1.3`
+  - **Precondición:** Endpoints de cursos protegidos por rol `TEACHER` disponibles en backend.
+  - **Hecho cuando:** El componente permita al docente registrar cursos y añadir módulos/lecciones consumiendo la API sin UIs simuladas.
+
+- [x] 3.7: Implementar segmentación condicional de interfaz por rol en `apps/web/src/App.tsx`, presentando el Gestor de Cursos al rol `TEACHER` y excluyendo de su vista la Preevaluación Diagnóstica y el Docente Virtual 3D
+  - **Cubre:** `HU-13`, `RF-04`, `ESC-13`
+  - **Depende de:** `3.6`, `2.5`
+  - **Precondición:** Estado de autenticación de usuario con atributo `role` accesible en cliente.
+  - **Hecho cuando:** Un usuario logueado con rol `TEACHER` vea su gestor de cursos y no tenga acceso ni visualización de las tarjetas de diagnóstico ni avatar 3D.
+
+- [x] 3.8: Crear suite de pruebas unitarias para `TeacherCourseManager` y validación de segmentación por rol en `apps/web`
+  - **Cubre:** `HU-13`, `RF-04`, `RF-06`, `ESC-13`
+  - **Depende de:** `3.6`, `3.7`
+  - **Precondición:** Componentes creados y cableados.
+  - **Hecho cuando:** `pnpm --filter @repo/web test` ejecute con 100% de aserciones en verde para la vista del docente.
 
 ---
 

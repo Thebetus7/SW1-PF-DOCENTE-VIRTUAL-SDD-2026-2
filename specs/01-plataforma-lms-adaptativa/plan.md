@@ -2,8 +2,8 @@
 
 ## 1. Metadatos del Plan
 - **ID de la Spec Asociada:** `SPEC-01` ([spec.md](file:///c:/EDBERTO/ULTIMO/SW1/PROYECTO%20FINAL/SW1-PF-DOCENTE-VIRTUAL-SDD-2026-2/specs/01-plataforma-lms-adaptativa/spec.md))
-- **Estado:** `En Revisión`
-- **Versión:** `1.0.0`
+- **Estado:** `Aprobado`
+- **Versión:** `1.1.0`
 - **Dependencias:** `Ninguna` (Plan Técnico Integral de la Arquitectura - 100% del Sistema)
 
 ---
@@ -364,6 +364,17 @@ export const SemanticEvaluationSchema = z.object({
     - `LiveTranscript`: Transcripción en vivo del `SpeechRecognition`.
     - `SubmitControls`: Botón "Terminar Respuesta / Enviar" y enlace fallback de texto.
     - `ImmediateFeedbackCard`: Tarjeta de retroalimentación inmediata con nota 0-100.
+
+### 7.2 Panel Web de Gestión Docente (`TeacherCourseManager.tsx`) y Segmentación por Rol
+- **Enrutamiento y Segmentación Visual Condicional:**
+  - Cuando `currentUser.role === 'TEACHER'`:
+    - El espacio principal de la aplicación web renderiza el panel de gestión académica docente.
+    - Se ocultan y deshabilitan estrictamente los componentes de Preevaluación Diagnóstica (`DiagnosticQuiz`) y el Examen Oral 3D (`TeacherAvatarCanvas`), los cuales están destinados exclusivamente al alumnado.
+- **Componentes del Gestor Docente en Web:**
+  - `TeacherCourseList`: Listado en tiempo real de los cursos creados por el docente con métricas de módulos y lecciones.
+  - `CourseCreationModal`: Formulario completo para registrar un nuevo curso (Título, Descripción, Nivel formativo).
+  - `ModuleLessonEditor`: Interfaz jerárquica para crear módulos temáticos y lecciones secuenciales con enlace a YouTube (`videoResourceId`) y contexto pedagógico.
+  - Conexión directa y cableada hacia los endpoints `/api/v1/courses`, `/api/v1/courses/:id/modules` y `/api/v1/courses/modules/:moduleId/lessons`.
 
 ---
 

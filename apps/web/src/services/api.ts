@@ -162,6 +162,17 @@ export function setStoredAuth(auth: AuthResponse): void {
   } catch {}
 }
 
+export function getStoredToken(): string | null {
+  try {
+    const raw = localStorage.getItem('auth_tokens');
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed.accessToken || null;
+  } catch {
+    return null;
+  }
+}
+
 export function getStoredUser(): User | null {
   try {
     const raw = localStorage.getItem('auth_user');
@@ -176,4 +187,115 @@ export function clearStoredAuth(): void {
     localStorage.removeItem('auth_tokens');
     localStorage.removeItem('auth_user');
   } catch {}
+}
+
+/**
+ * Cursos - API REST
+ */
+export async function fetchCourses(): Promise<any[]> {
+  const response = await fetch(`${API_BASE_URL}/courses`, {
+    headers: { 'Accept': 'application/json' },
+  });
+  if (!response.ok) {
+    throw new Error(`Error al obtener catálogo de cursos (${response.status})`);
+  }
+  return response.json();
+}
+
+export async function fetchCourseById(courseId: string): Promise<any> {
+  const response = await fetch(`${API_BASE_URL}/courses/${courseId}`, {
+    headers: { 'Accept': 'application/json' },
+  });
+  if (!response.ok) {
+    throw new Error(`Error al obtener detalles del curso (${response.status})`);
+  }
+  return response.json();
+}
+
+export async function createCourse(payload: { title: string; description: string }): Promise<any> {
+  const token = getStoredToken();
+  const response = await fetch(`${API_BASE_URL}/courses`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    const msg = Array.isArray(data.message) ? data.message.join(', ') : data.message;
+    throw new Error(msg || `Error al crear curso (${response.status})`);
+  }
+  return data;
+}
+
+export async function createModule(courseId: string, payload: { title: string; orderIndex?: number }): Promise<any> {
+  const token = getStoredToken();
+  const response = await fetch(`${API_BASE_URL}/courses/${courseId}/modules`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    const msg = Array.isArray(data.message) ? data.message.join(', ') : data.message;
+    throw new Error(msg || `Error al crear módulo (${response.status})`);
+  }
+  return data;
+}
+
+export async function createLesson(
+  moduleId: string,
+  payload: { title: string; videoResourceId: string; pedagogicalContext?: string; orderIndex?: number }
+): Promise<any> {
+  const token = getStoredToken();
+  const response = await fetch(`${API_BASE_URL}/courses/modules/${moduleId}/lessons`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    const msg = Array.isArray(data.message) ? data.message.join(', ') : data.message;
+    throw new Error(msg || `Error al crear lección (${response.status})`);
+  }
+  return data;
+}
+
+/**
+ * Preevaluación Diagnóstica - API REST
+ */
+export async function fetchDiagnosticQuiz(): Promise<any[]> {
+  const response = await fetch(`${API_BASE_URL}/diagnostics/quiz`, {
+    headers: { 'Accept': 'application/json' },
+  });
+  if (!response.ok) {
+    throw new Error(`Error al obtener preguntas del diagnóstico (${response.status})`);
+  }
+  return response.json();
+}
+
+export async function submitDiagnostic(answers: any[]): Promise<any> {
+  const token = getStoredToken();
+  const response = await fetch(`${API_BASE_URL}/diagnostics/submit`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ answers }),
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    const msg = Array.isArray(data.message) ? data.message.join(', ') : data.message;
+    throw new Error(msg || `Error al enviar respuestas del diagnóstico (${response.status})`);
+  }
+  return data;
 }
