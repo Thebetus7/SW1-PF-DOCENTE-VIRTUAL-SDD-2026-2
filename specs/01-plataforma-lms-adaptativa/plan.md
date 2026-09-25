@@ -367,14 +367,26 @@ export const SemanticEvaluationSchema = z.object({
 
 ### 7.2 Panel Web de Gestión Docente (`TeacherCourseManager.tsx`) y Segmentación por Rol
 - **Enrutamiento y Segmentación Visual Condicional:**
-  - Cuando `currentUser.role === 'TEACHER'`:
-    - El espacio principal de la aplicación web renderiza el panel de gestión académica docente.
+  - Cuando `currentUser.role === 'TEACHER'` o `'ADMIN'`:
+    - El módulo "Cursos" del layout renderiza el panel de gestión académica docente (`TeacherCourseManager.tsx`).
     - Se ocultan y deshabilitan estrictamente los componentes de Preevaluación Diagnóstica (`DiagnosticQuiz`) y el Examen Oral 3D (`TeacherAvatarCanvas`), los cuales están destinados exclusivamente al alumnado.
 - **Componentes del Gestor Docente en Web:**
   - `TeacherCourseList`: Listado en tiempo real de los cursos creados por el docente con métricas de módulos y lecciones.
-  - `CourseCreationModal`: Formulario completo para registrar un nuevo curso (Título, Descripción, Nivel formativo).
-  - `ModuleLessonEditor`: Interfaz jerárquica para crear módulos temáticos y lecciones secuenciales con enlace a YouTube (`videoResourceId`) y contexto pedagógico.
-  - Conexión directa y cableada hacia los endpoints `/api/v1/courses`, `/api/v1/courses/:id/modules` y `/api/v1/courses/modules/:moduleId/lessons`.
+  - `CourseCreationModal`: Formulario completo para registrar un nuevo curso (Título, Descripción) con persistencia en `POST /api/v1/courses`.
+  - `ModuleLessonEditor`: Interfaz jerárquica para crear módulos temáticos (`POST /api/v1/courses/:id/modules`) y lecciones secuenciales con enlace a YouTube (`videoResourceId`) y contexto pedagógico (`POST /api/v1/courses/modules/:moduleId/lessons`).
+  - Previsualización en Aula: Enlace directo "Ver en Aula" para inspeccionar el curso con la vista de estudiante.
+
+### 7.3 Navegación en el Layout y Orquestación de Vistas (`App.tsx`)
+- **Máquina de Estados de Navegación (`ActiveView`):**
+  - `'home'`: Panel de inicio adaptativo. Si el usuario es docente, muestra el acceso destacado a la creación de cursos; si es estudiante, muestra las tarjetas funcionales de Diagnóstico Dinámico y Docente Virtual 3D.
+  - `'courses'`: Despliega `TeacherCourseManager` para profesores y `CourseCatalog` para estudiantes y visitantes.
+  - `'course-view'`: Visor de lecciones con reproductor YouTube (`LessonPlayer.tsx`) y botón para saltar al examen oral.
+  - `'diagnostic'`: Pantalla completa de cuestionario adaptativo con preguntas obtenidas desde `GET /api/v1/diagnostics/quiz` y envío calificado vía `POST /api/v1/diagnostics/submit`.
+  - `'oral-exam'`: Experiencia inmersiva tridimensional Split-Screen 60/40 (`OralExamContainer.tsx`) con selección Elena/David, gesticulación gesticular en 4 estados, reconocimiento STT y evaluación semántica.
+- **Header Global Reactivo:**
+  - Monitor en vivo `BackendStatusBadge` conectado a `/health`.
+  - Enlaces de navegación rápida segmentados según el rol autenticado.
+  - Visualización del balance de créditos en tiempo real con actualización reactiva tras completar el diagnóstico.
 
 ---
 

@@ -337,7 +337,8 @@ stateDiagram-v2
 - **HU-10 (Docente - Dashboard Móvil y Feedback de Fallas Recurrentes):** Como profesor, quiero consultar desde mi aplicación móvil el desempeño de mis alumnos y visualizar un informe analítico inteligente que me señale los conceptos y preguntas donde los alumnos presentan mayores fallas para orientar mi retroalimentación pedagógica.
 - **HU-11 (Docente - Acceso Móvil Offline-First):** Como profesor, quiero consultar las estadísticas de mis alumnos y el reporte de fallas en mi app móvil aun cuando no disponga de conexión a internet.
 - **HU-12 (Administrador - Configuración de Créditos Iniciales):** Como administrador, quiero configurar el número de créditos gratuitos asignados a los nuevos estudiantes tras la preevaluación para ajustar la política comercial o académica de la plataforma.
-- **HU-13 (Docente - Panel Web de Gestión y Exclusión de Evaluación 3D):** Como profesor autenticado en la plataforma web, quiero visualizar un panel dedicado a la creación y administración de mis cursos, módulos y lecciones, sin ver las opciones de preevaluación diagnóstica ni del Docente Virtual 3D (reservadas exclusivamente para estudiantes).
+- **HU-13 (Docente - Panel Web de Gestión y Exclusión de Evaluación 3D):** Como profesor autenticado en la plataforma web, quiero visualizar un panel dedicado a la creación y administración de mis cursos, módulos y lecciones en el módulo Cursos del layout, sin ver las opciones de preevaluación diagnóstica ni del Docente Virtual 3D (reservadas exclusivamente para estudiantes).
+- **HU-14 (Estudiante - Acceso Directo a Diagnóstico y Docente 3D):** Como estudiante en la plataforma web, quiero acceder de manera directa y funcional a la Preevaluación Diagnóstica y a la experiencia del Docente Virtual 3D mediante botones interactivos en el panel de bienvenida y en el menú de navegación superior.
 
 ---
 
@@ -471,9 +472,23 @@ stateDiagram-v2
 
 ### Escenario 13: Panel de gestión de cursos para el docente y exclusión del Docente 3D en la web
 - **GIVEN** un usuario autenticado en la plataforma web con rol `TEACHER`
-- **WHEN** accede a su espacio principal
+- **WHEN** accede a su espacio principal o selecciona el módulo "Cursos" en el layout menú
 - **THEN** el sistema despliega el Gestor de Cursos Docente permitiéndole crear cursos, módulos y lecciones asociadas a YouTube
 - **AND** el sistema no renderiza ni ofrece las tarjetas de "Iniciar Diagnóstico" ni "Examen con Docente Virtual 3D", manteniéndolas restringidas a estudiantes.
+
+### Escenario 14: Activación y ejecución de Preevaluación Diagnóstica con acreditación reactiva
+- **GIVEN** un estudiante autenticado en la plataforma web
+- **WHEN** presiona el botón "Iniciar Diagnóstico" en el dashboard o en la barra de navegación
+- **THEN** el sistema solicita dinámicamente el cuestionario al backend (`GET /api/v1/diagnostics/quiz`) generado por IA
+- **AND WHEN** el estudiante responde las preguntas y confirma el envío
+- **THEN** el backend evalúa el dominio conceptual, asigna la lección recomendada y acredita 3 créditos iniciales reflejados de inmediato en el balance del header.
+
+### Escenario 15: Interacción inmersiva con el Docente Virtual 3D
+- **GIVEN** un estudiante en la plataforma web
+- **WHEN** presiona el botón "Conocer al Docente 3D"
+- **THEN** el sistema inicializa la vista inmersiva Split-Screen 60/40
+- **AND** permite seleccionar entre la Prof. Elena y el Prof. David, animando el avatar 3D con parpadeo y respiración
+- **AND** reproduce la pregunta con voz sintetizada y sincronización labial (*lip-sync*) en `jawOpen`, habilitando el micrófono para capturar la respuesta verbal con transcripción en vivo.
 
 ---
 
